@@ -26,7 +26,12 @@ var strategy = strategies.IntervalStrategy{
 			slackBot.Err(func(err string) {
 				log.Println("Error during slack bot connection: ", err)
 			})
-			go slackBot.Listen()
+			go func() {
+				err := slackBot.Listen()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}()
 			return nil
 		},
 		OnUpdate: func(ew exchangeWrappers.ExchangeWrapper, m *environment.Market) error {

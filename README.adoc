@@ -6,7 +6,7 @@ This bot has a simple strategy to gather signals to Slack Groups.
 == Installing the package
 
 First of all `go get` the repository
-[source, bash]
+[source, sh]
 ----
 $ go get github.com/crypto-crew-tech/rossbotuccino
 ----
@@ -14,7 +14,7 @@ $ go get github.com/crypto-crew-tech/rossbotuccino
 ==== Vendored Dependencies
 This bot needs `github.com/shomali11/slacker` as a vendored dependency.
 Install it with `govendor`:
-[source, bash]
+[source, sh]
 ----
 $ govendor fetch github.com/shomali11/slacker
 ----
@@ -23,7 +23,7 @@ $ govendor fetch github.com/shomali11/slacker
 This bot relies on link:https://github.com/saniales/golang-crypto-trading-bot[Golang Crypto Trading Bot by saniales] library.
 
 So `go get` it and add your custom strategy:
-[source, bash]
+[source, sh]
 ----
 $ go get github.com/saniales/golang-crypto-trading-bot
 ----
@@ -31,11 +31,11 @@ $ go get github.com/saniales/golang-crypto-trading-bot
 Then in your code:
 [source, go]
 ----
-import github.com/saniales/golang-crypto-trading-bot
+import "github.com/saniales/golang-crypto-trading-bot"
 
 func main() {
     strategies.AddCustomStrategy(strategy) //add your strategy
-	bot.Execute()
+    bot.Execute()
 }
 ----
 
