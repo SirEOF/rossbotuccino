@@ -18,6 +18,7 @@ import (
 )
 
 var oldSma20 []float64
+var candles = make(map[string]bittrex.CandleSticks)
 var slackBot = slacker.NewClient(os.Getenv("SLACK_TOKEN"))
 var strategy = strategies.IntervalStrategy{
 	Model: strategies.StrategyModel{
@@ -39,14 +40,27 @@ var strategy = strategies.IntervalStrategy{
 			return nil
 		},
 		OnUpdate: func(ew exchangeWrappers.ExchangeWrapper, m *environment.Market) error {
+			if candles[m.Name] == nil {
+				ticks, err := bittrex.GetTicks(m.Name, "thirty")
+				if err != nil {
+					return err
+				}
+				candles[m.Name] = ticks
+			} else {
+				candle, err := bittrex.GetLatestTick(m.Name, "thirtyMin")
+				if err != nil {
+					return err
+				}
+				if candle.Timestamp != candles[m.Name][len(candles[m.Name])-1].Timestamp {
+					candles[m.Name] = append(candles[m.Name][1:len(candles)-1], *candle)
+				}
+			}
+			candles := candles[m.Name]
 			err := ew.GetMarketSummary(m)
 			if err != nil {
 				return err
 			}
-			candles, err := bittrex.GetTicks(m.Name, "thirtyMin")
-			if err != nil {
-				return err
-			}
+
 			closePrices := make([]float64, len(candles))
 			for i, candle := range candles {
 				closePrices[i] = candle.Close
@@ -107,7 +121,8 @@ SELL AT %f`, m.Name, m.Summary.Bid)
 			return nil
 		},
 		OnError: func(err error) {
-			slackBot.Client.PostMessage(os.Getenv("POST_CHANNEL"), "I am dead due to an error <@thebotguy>; "+err.Error(), slack.PostMessageParameters{AsUser: true})
+			log.Println("ERROR :", err)
+			//slackBot.Client.PostMessage(os.Getenv("POST_CHANNEL"), "I am dead due to an error <@thebotguy>; "+err.Error(), slack.PostMessageParameters{AsUser: true})
 		},
 	},
 	Interval: time.Minute * 5,
